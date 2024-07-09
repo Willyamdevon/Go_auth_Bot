@@ -21,8 +21,8 @@ func main() {
 	db, err := repo.NewPostgresDB(repo.Config{
 		Host:     os.Getenv("DB_HOST"),
 		Port:     os.Getenv("DB_PORT"),
-		Username: os.Getenv("DB_USER"),
-		Password: os.Getenv("DB_PASS"),
+		Username: os.Getenv("DB_USERNAME"),
+		Password: os.Getenv("DB_PASSWORD"),
 		DBName:   os.Getenv("DB_NAME"),
 	})
 	if err != nil {
@@ -58,7 +58,10 @@ func main() {
 			if err != nil {
 				log.Println(err)
 			}
+			if hashId == "Уже есть" {
+				msg.Text = "У вас уже есть ссылка"
 
+			}
 			msg.Text = fmt.Sprintf("Ссылка на аутентификация тг: %s (действует 12 часов)", generateLink(hashId))
 		case "cancel":
 			msg.Text = fmt.Sprintf("Действие %s отмененно", statuses[update.Message.From.ID])
@@ -84,5 +87,5 @@ func generateIdHash(id int64) string {
 }
 
 func generateLink(hashId string) string {
-	return fmt.Sprintf("htpps://upfollow.ru/Auth-tg/%s", hashId)
+	return fmt.Sprintf("https://upfollow.ru/Auth-tg/%s", hashId)
 }
