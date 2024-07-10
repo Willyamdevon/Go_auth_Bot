@@ -51,10 +51,6 @@ func main() {
 		switch update.Message.Command() {
 		case "help":
 			msg.Text = "I understand /sayhi and /status."
-		case "sayhi":
-			msg.Text = "Hi :)"
-		case "status":
-			msg.Text = "I'm ok."
 		case "start":
 			msg.Text = "Привет! Этот бот создан для того, чтобы оповещать тебя о новых ответах на твои вопросы и комментариях к статьям, чтобы прикрепить свой аккаунт к боту, напиши команду /reg"
 		case "reg":
@@ -81,6 +77,8 @@ func main() {
 			} else {
 				msg.Text = fmt.Sprintf("Ссылка на аутентификация тг: %s (действует 12 часов)", generateLink(hashId))
 			}
+		case "cancel":
+			// TODO: добавить функцию удаления ссылки
 		default:
 			msg.Text = "I don't know that command"
 		}

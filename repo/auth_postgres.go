@@ -18,7 +18,7 @@ func CreateId(tgId int64, idHash string, chatId int64, db *sqlx.DB) (string, err
 			var id string
 
 			query := fmt.Sprintf("INSERT INTO %s (tg_id, id_hash, chat_id, time) VALUES ($1, $2, $3, $4) RETURNING id_hash", hashTable)
-
+			// TODO: добавить в бд столбец-статус - ссылка уже использованна
 			row := db.QueryRow(query, tgId, idHash, chatId, time.Now().Add(time.Hour*12).UTC())
 			if err := row.Scan(&id); err != nil {
 				fmt.Println(err)
