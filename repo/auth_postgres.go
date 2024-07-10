@@ -6,7 +6,7 @@ import (
 	"time"
 )
 
-func CreateId(tgId int64, idHash string, db *sqlx.DB) (string, error) {
+func CreateId(tgId int64, idHash string, chatId int64, db *sqlx.DB) (string, error) {
 	var count int
 
 	count, err := CountOfID(tgId, db)
@@ -17,9 +17,9 @@ func CreateId(tgId int64, idHash string, db *sqlx.DB) (string, error) {
 		if count == 0 {
 			var id string
 
-			query := fmt.Sprintf("INSERT INTO %s (tg_id, id_hash, time) VALUES ($1, $2, $3) RETURNING id_hash", hashTable)
+			query := fmt.Sprintf("INSERT INTO %s (tg_id, id_hash, chat_id, time) VALUES ($1, $2, $3, $4) RETURNING id_hash", hashTable)
 
-			row := db.QueryRow(query, tgId, idHash, time.Now().Add(time.Hour*12).UTC())
+			row := db.QueryRow(query, tgId, idHash, chatId, time.Now().Add(time.Hour*12).UTC())
 			if err := row.Scan(&id); err != nil {
 				fmt.Println(err)
 				return "", err

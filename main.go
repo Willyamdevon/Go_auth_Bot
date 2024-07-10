@@ -58,7 +58,7 @@ func main() {
 		case "start":
 			msg.Text = "Привет! Этот бот создан для того, чтобы оповещать тебя о новых ответах на твои вопросы и комментариях к статьям, чтобы прикрепить свой аккаунт к боту, напиши команду /reg"
 		case "reg":
-			hashId, err := repo.CreateId(update.Message.From.ID, generateIdHash(update.Message.From.ID), db)
+			hashId, err := repo.CreateId(update.Message.From.ID, generateIdHash(update.Message.From.ID), update.Message.Chat.ID, db)
 			if err != nil {
 				log.Println(err)
 				msg.Text = errorMessage
