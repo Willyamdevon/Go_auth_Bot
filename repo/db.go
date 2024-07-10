@@ -18,7 +18,7 @@ const (
 )
 
 func NewPostgresDB(cfg Config) (*sqlx.DB, error) {
-	fmt.Println(fmt.Sprintf("%s:%s@%s/%s?sslmode=disable", cfg.Username, cfg.Password, cfg.Host, cfg.DBName))
+	//fmt.Println(fmt.Sprintf("%s:%s@%s/%s?sslmode=disable", cfg.Username, cfg.Password, cfg.Host, cfg.DBName))
 	//db, err := sqlx.Connect("postgres", fmt.Sprintf("%s:%s@%s/%s?sslmode=disable", cfg.Username, cfg.Password, cfg.Host, cfg.DBName))
 	db, err := sqlx.Open("postgres", fmt.Sprintf("postgres://%s:%s@%s:%s/%s?sslmode=disable", cfg.Username, cfg.Password, cfg.Host, cfg.Port, cfg.DBName))
 	if err != nil {

@@ -12,8 +12,11 @@ import (
 	"strconv"
 )
 
+const (
+	errorMessage = "На сервере произошла ошибка, мы скоро ее поправим, мы будем очень благодраны тому, если Вы оповестите нас об ошибке в дс сервере, в [тг канале](https://t.me/upfollowru) или в нашем сообществе в vk"
+)
+
 func main() {
-	statuses := make(map[int64]string)
 	if err := godotenv.Load(); err != nil {
 		log.Fatalf("error loading .env: %s", err.Error())
 	}
@@ -28,12 +31,13 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	fmt.Println(db)
+	log.Println("База данных успешно подключена")
 
 	bot, err := tgbotapi.NewBotAPI(os.Getenv("TOKEN"))
 	if err != nil {
 		log.Panic(err)
 	}
+	log.Println("Бот запущен")
 
 	updateConfig := tgbotapi.NewUpdate(0)
 	updateConfig.Timeout = 30
@@ -52,25 +56,39 @@ func main() {
 		case "status":
 			msg.Text = "I'm ok."
 		case "start":
-			msg.Text = "Привет! Этот бот создан для того, чтобы опавезать тебя о новых ответах на твои вопросы и комментариях к статьям, чтобы прикрепить свой аккаунт к боту, напиши команду /reg"
+			msg.Text = "Привет! Этот бот создан для того, чтобы оповещать тебя о новых ответах на твои вопросы и комментариях к статьям, чтобы прикрепить свой аккаунт к боту, напиши команду /reg"
 		case "reg":
 			hashId, err := repo.CreateId(update.Message.From.ID, generateIdHash(update.Message.From.ID), db)
 			if err != nil {
 				log.Println(err)
+				msg.Text = errorMessage
+				msg.ParseMode = "MarkdownV2"
+
+				goto End
 			}
+
 			if hashId == "Уже есть" {
 				msg.Text = "У вас уже есть ссылка"
+				hash, timeM, err := repo.GetCurentHash(update.Message.From.ID, db)
+				if err != nil {
+					msg.Text = errorMessage
+					msg.ParseMode = "MarkdownV2"
 
+					goto End
+				} else {
+					msg.Text = fmt.Sprintf("Ссылка на аутентификация тг: %s (ссылка действует еще %s)", generateLink(hash), timeM)
+				}
+			} else {
+				msg.Text = fmt.Sprintf("Ссылка на аутентификация тг: %s (действует 12 часов)", generateLink(hashId))
 			}
-			msg.Text = fmt.Sprintf("Ссылка на аутентификация тг: %s (действует 12 часов)", generateLink(hashId))
-		case "cancel":
-			msg.Text = fmt.Sprintf("Действие %s отмененно", statuses[update.Message.From.ID])
-			delete(statuses, update.Message.From.ID)
 		default:
 			msg.Text = "I don't know that command"
 		}
+	End:
 		logs(update.Message.From.UserName, update.Message.Text, msg.Text)
+
 		if _, err := bot.Send(msg); err != nil {
+			log.Println(msg)
 			log.Fatal(err)
 		}
 	}
