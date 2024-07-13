@@ -82,6 +82,15 @@ func DeleteLink(tgId int64, db *sqlx.DB) error {
 }
 
 func GetCurentTime(tgId int64, db *sqlx.DB) (string, error) {
+	count, err := CountOfID(tgId, db)
+	if err != nil {
+		return "", err
+	}
+
+	if count == 0 {
+		return "", nil
+	}
+
 	var timeStart time.Time
 
 	query := fmt.Sprintf("SELECT time FROM %s WHERE tg_id=$1", hashTable)
@@ -109,6 +118,15 @@ func GetCurentTime(tgId int64, db *sqlx.DB) (string, error) {
 }
 
 func GetCurentHash(tgId int64, db *sqlx.DB) (string, error) {
+	count, err := CountOfID(tgId, db)
+	if err != nil {
+		return "", err
+	}
+
+	if count == 0 {
+		return "", nil
+	}
+
 	var hash string
 
 	query := fmt.Sprintf("SELECT id_hash FROM %s WHERE tg_id=$1", hashTable)

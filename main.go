@@ -17,8 +17,12 @@ const (
 )
 
 const (
-	errorMessage = "На сервере произошла ошибка, мы скоро ее поправим, мы будем очень благодраны тому, если Вы оповестите нас об ошибке в дс сервере, в [тг канале](https://t.me/upfollowru) или в нашем сообществе в vk"
-	startMessage = "Привет! Этот бот создан для того, чтобы оповещать тебя о новых ответах на твои вопросы и комментариях к статьям, чтобы прикрепить свой аккаунт к боту, напиши команду /reg"
+	errorMessage      = "На сервере произошла ошибка, мы скоро ее поправим, мы будем очень благодраны тому, если Вы оповестите нас об ошибке в дс сервере, в [тг канале](https://t.me/upfollowru) или в нашем сообществе в vk"
+	startMessage      = "Привет! Этот бот создан для того, чтобы оповещать тебя о новых ответах на твои вопросы и комментариях к статьям, чтобы прикрепить свой аккаунт к боту, напиши команду /reg"
+	invalidMessage    = "Ваша ссылка больше не действительна или ее больше нет:)"
+	idkCommandMessage = "I don't know that command"
+	newLinkMessage    = "Ваша ссылка уже не дейстивтельна, вым надо получить новую через команду /reg"
+	notLinkMessage    = "У вас нет ссылки, ее можно получить через команду /reg"
 )
 
 func main() {
@@ -68,9 +72,9 @@ func main() {
 				goto End
 			}
 			if time != "" {
-				msg.Text = fmt.Sprintf("Время действия вашей ссылки: %s, чтобы получить эту ссылку - /git-link", time)
+				msg.Text = fmt.Sprintf("Время действия вашей ссылки: %s, чтобы получить эту ссылку - /git_link", time)
 			} else {
-				msg.Text = "Ваша ссылка больше не действительна"
+				msg.Text = invalidMessage
 			}
 		case "get_link":
 			hashID, err := repo.GetCurentHash(update.Message.From.ID, db)
@@ -81,8 +85,11 @@ func main() {
 
 				goto End
 			}
-
-			msg.Text = fmt.Sprintf("Ссылка на аутентификация тг: %s", generateLink(hashID))
+			if hashID != "" {
+				msg.Text = fmt.Sprintf("Ссылка на аутентификация тг: %s", generateLink(hashID))
+			} else {
+				msg.Text = notLinkMessage
+			}
 
 		case "reg":
 			hashId, err := repo.CreateId(update.Message.From.ID, generateIdHash(update.Message.From.ID), update.Message.Chat.ID, db)
@@ -112,7 +119,7 @@ func main() {
 						goto End
 					}
 
-					msg.Text = "Ваша ссылка уже не дейстивтельна, вым надо получить новую через команду /reg"
+					msg.Text = newLinkMessage
 				}
 			} else {
 				msg.Text = fmt.Sprintf("Ссылка на аутентификация тг: %s (действует 12 часов)", generateLink(hashId))
@@ -126,7 +133,7 @@ func main() {
 			}
 			msg.Text = "Ссылка удалена"
 		default:
-			msg.Text = "I don't know that command"
+			msg.Text = idkCommandMessage
 		}
 	End:
 		logs(update.Message.From.UserName, update.Message.Text, msg.Text)
