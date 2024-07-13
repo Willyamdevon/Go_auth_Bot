@@ -51,9 +51,13 @@ func GetCurentHash(tgId int64, db *sqlx.DB) (string, string, error) {
 	minutes := (seconds - hours*3600) / 60
 	remainingSeconds := seconds - hours*3600 - minutes*60
 
-	result := fmt.Sprintf("%d hours, %d minutes, %d seconds", hours, minutes, remainingSeconds)
+	if seconds > 0 && hours > 0 && remainingSeconds > 0 {
+		result := fmt.Sprintf("ссылка действует %d hours, %d minutes, %d seconds", hours, minutes, remainingSeconds)
 
-	return hash, result, nil
+		return hash, result, nil
+	}
+
+	return hash, "", nil
 }
 
 func CountOfID(tgId int64, db *sqlx.DB) (int, error) {
@@ -66,4 +70,12 @@ func CountOfID(tgId int64, db *sqlx.DB) (int, error) {
 	}
 
 	return count, nil
+}
+
+func DeleteLink(tgId int64, db *sqlx.DB) error {
+	query := fmt.Sprintf("DELETE FROM %s WHERE tg_id=$1", hashTable)
+	if _, err := db.Exec(query, tgId); err != nil {
+		return err
+	}
+	return nil
 }

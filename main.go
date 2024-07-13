@@ -13,7 +13,7 @@ import (
 )
 
 const (
-	errorMessage = "На сервере произошла ошибка, мы скоро ее поправим, мы будем очень благодраны тому, если Вы оповестите нас об ошибке в дс сервере, в [тг канале](https://t.me/upfollowru) или в нашем сообществе в vk"
+	salt = "rheufhurhiuien"
 )
 
 func main() {
@@ -50,9 +50,9 @@ func main() {
 		msg := tgbotapi.NewMessage(update.Message.Chat.ID, "")
 		switch update.Message.Command() {
 		case "help":
-			msg.Text = "I understand /sayhi and /status."
+			msg.Text = startMessage
 		case "start":
-			msg.Text = "Привет! Этот бот создан для того, чтобы оповещать тебя о новых ответах на твои вопросы и комментариях к статьям, чтобы прикрепить свой аккаунт к боту, напиши команду /reg"
+			msg.Text = startMessage
 		case "reg":
 			hashId, err := repo.CreateId(update.Message.From.ID, generateIdHash(update.Message.From.ID), update.Message.Chat.ID, db)
 			if err != nil {
@@ -71,14 +71,29 @@ func main() {
 					msg.ParseMode = "MarkdownV2"
 
 					goto End
+				} else if timeM != "" {
+					msg.Text = fmt.Sprintf("Ссылка на аутентификация тг: %s %s", generateLink(hash), timeM)
 				} else {
-					msg.Text = fmt.Sprintf("Ссылка на аутентификация тг: %s (ссылка действует еще %s)", generateLink(hash), timeM)
+					if err := repo.DeleteLink(update.Message.From.ID, db); err != nil {
+						msg.Text = errorMessage
+						msg.ParseMode = "MarkdownV2"
+
+						goto End
+					}
+
+					msg.Text = "Ваша ссылка уже не дейстивтельна, вым надо получить новую через команду /reg"
 				}
 			} else {
 				msg.Text = fmt.Sprintf("Ссылка на аутентификация тг: %s (действует 12 часов)", generateLink(hashId))
 			}
 		case "cancel":
-			// TODO: добавить функцию удаления ссылки
+			if err := repo.DeleteLink(update.Message.From.ID, db); err != nil {
+				msg.Text = errorMessage
+				msg.ParseMode = "MarkdownV2"
+
+				goto End
+			}
+			msg.Text = "Ссылка удалена"
 		default:
 			msg.Text = "I don't know that command"
 		}
@@ -99,7 +114,7 @@ func logs(UserName, Text, TextU string) {
 func generateIdHash(id int64) string {
 	hash := sha1.New()
 	hash.Write([]byte(strconv.FormatInt(id, 10)))
-	return fmt.Sprintf("%x", hash.Sum([]byte("rheufhurhiuien")))
+	return fmt.Sprintf("%x", hash.Sum([]byte(salt)))
 }
 
 func generateLink(hashId string) string {

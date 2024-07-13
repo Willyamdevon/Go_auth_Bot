@@ -33,7 +33,7 @@ func NewPostgresDB(cfg Config) (*sqlx.DB, error) {
 	// TODO: добавить в бд столбец-статус - ссылка уже использованна
 	_, err = db.Exec("CREATE TABLE IF NOT EXISTS tg_hashs (tg_id text, id_hash text, chat_id text, time timestamp)")
 	if err != nil {
-		panic(err)
+		return nil, err
 	}
 
 	return db, nil
