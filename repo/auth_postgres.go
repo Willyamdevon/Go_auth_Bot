@@ -3,6 +3,7 @@ package repo
 import (
 	"fmt"
 	"github.com/jmoiron/sqlx"
+	"log"
 	"time"
 )
 
@@ -32,7 +33,7 @@ func CreateId(tgId int64, idHash string, chatId int64, db *sqlx.DB) (string, err
 
 }
 
-func GetCurentHash(tgId int64, db *sqlx.DB) (string, string, error) {
+func GetCurentLink(tgId int64, db *sqlx.DB) (string, string, error) {
 	var hash string
 	var timeStart time.Time
 
@@ -78,4 +79,43 @@ func DeleteLink(tgId int64, db *sqlx.DB) error {
 		return err
 	}
 	return nil
+}
+
+func GetCurentTime(tgId int64, db *sqlx.DB) (string, error) {
+	var timeStart time.Time
+
+	query := fmt.Sprintf("SELECT time FROM %s WHERE tg_id=$1", hashTable)
+
+	row := db.QueryRow(query, tgId)
+	if err := row.Scan(&timeStart); err != nil {
+		return "", err
+	}
+
+	currentTime := time.Now().UTC()
+	duration := timeStart.Sub(currentTime)
+
+	seconds := int(duration.Seconds())
+	hours := seconds / 3600
+	minutes := (seconds - hours*3600) / 60
+	remainingSeconds := seconds - hours*3600 - minutes*60
+
+	if seconds > 0 && hours > 0 && remainingSeconds > 0 {
+		result := fmt.Sprintf("ссылка действует %d hours, %d minutes, %d seconds", hours, minutes, remainingSeconds)
+
+		return result, nil
+	}
+
+	return "", nil
+}
+
+func GetCurentHash(tgId int64, db *sqlx.DB) (string, error) {
+	var hash string
+
+	query := fmt.Sprintf("SELECT id_hash FROM %s WHERE tg_id=$1", hashTable)
+	row := db.QueryRow(query, tgId)
+	if err := row.Scan(&hash); err != nil {
+		return "", err
+	}
+	log.Println(hash)
+	return hash, nil
 }

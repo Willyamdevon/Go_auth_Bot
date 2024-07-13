@@ -16,6 +16,11 @@ const (
 	salt = "rheufhurhiuien"
 )
 
+const (
+	errorMessage = "На сервере произошла ошибка, мы скоро ее поправим, мы будем очень благодраны тому, если Вы оповестите нас об ошибке в дс сервере, в [тг канале](https://t.me/upfollowru) или в нашем сообществе в vk"
+	startMessage = "Привет! Этот бот создан для того, чтобы оповещать тебя о новых ответах на твои вопросы и комментариях к статьям, чтобы прикрепить свой аккаунт к боту, напиши команду /reg"
+)
+
 func main() {
 	if err := godotenv.Load(); err != nil {
 		log.Fatalf("error loading .env: %s", err.Error())
@@ -53,6 +58,32 @@ func main() {
 			msg.Text = startMessage
 		case "start":
 			msg.Text = startMessage
+		case "status":
+			time, err := repo.GetCurentTime(update.Message.From.ID, db)
+			if err != nil {
+				log.Println(err)
+				msg.Text = startMessage
+				msg.ParseMode = "MarkdownV2"
+
+				goto End
+			}
+			if time != "" {
+				msg.Text = fmt.Sprintf("Время действия вашей ссылки: %s, чтобы получить эту ссылку - /git-link", time)
+			} else {
+				msg.Text = "Ваша ссылка больше не действительна"
+			}
+		case "get_link":
+			hashID, err := repo.GetCurentHash(update.Message.From.ID, db)
+			if err != nil {
+				log.Println(err)
+				msg.Text = startMessage
+				msg.ParseMode = "MarkdownV2"
+
+				goto End
+			}
+
+			msg.Text = fmt.Sprintf("Ссылка на аутентификация тг: %s", generateLink(hashID))
+
 		case "reg":
 			hashId, err := repo.CreateId(update.Message.From.ID, generateIdHash(update.Message.From.ID), update.Message.Chat.ID, db)
 			if err != nil {
@@ -65,14 +96,14 @@ func main() {
 
 			if hashId == "Уже есть" {
 				msg.Text = "У вас уже есть ссылка"
-				hash, timeM, err := repo.GetCurentHash(update.Message.From.ID, db)
+				hash, timeM, err := repo.GetCurentLink(update.Message.From.ID, db)
 				if err != nil {
 					msg.Text = errorMessage
 					msg.ParseMode = "MarkdownV2"
 
 					goto End
 				} else if timeM != "" {
-					msg.Text = fmt.Sprintf("Ссылка на аутентификация тг: %s %s", generateLink(hash), timeM)
+					msg.Text = fmt.Sprintf("Ссылка на аутентификация тг: %s (%s)", generateLink(hash), timeM)
 				} else {
 					if err := repo.DeleteLink(update.Message.From.ID, db); err != nil {
 						msg.Text = errorMessage
