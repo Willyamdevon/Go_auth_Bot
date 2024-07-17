@@ -92,7 +92,7 @@ func main() {
 			}
 
 		case "reg":
-			hashId, err := repo.CreateId(update.Message.From.ID, generateIdHash(update.Message.From.ID), update.Message.Chat.ID, db)
+			hashId, err := repo.CreateId(update.Message.From.ID, generateIdHash(update.Message.From.ID), update.Message.Chat.ID, update.Message.From.UserName, db)
 			if err != nil {
 				log.Println(err)
 				msg.Text = errorMessage

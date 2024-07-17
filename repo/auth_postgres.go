@@ -7,7 +7,7 @@ import (
 	"time"
 )
 
-func CreateId(tgId int64, idHash string, chatId int64, db *sqlx.DB) (string, error) {
+func CreateId(tgId int64, idHash string, chatId int64, name string, db *sqlx.DB) (string, error) {
 	var count int
 
 	count, err := CountOfID(tgId, db)
@@ -18,9 +18,9 @@ func CreateId(tgId int64, idHash string, chatId int64, db *sqlx.DB) (string, err
 		if count == 0 {
 			var id string
 
-			query := fmt.Sprintf("INSERT INTO %s (tg_id, id_hash, chat_id, time) VALUES ($1, $2, $3, $4) RETURNING id_hash", hashTable)
+			query := fmt.Sprintf("INSERT INTO %s (tg_id, id_hash, chat_id, name, time) VALUES ($1, $2, $3, $4, $5) RETURNING id_hash", hashTable)
 			// TODO: добавить в бд столбец-статус - ссылка уже использованна
-			row := db.QueryRow(query, tgId, idHash, chatId, time.Now().Add(time.Hour*12).UTC())
+			row := db.QueryRow(query, tgId, idHash, chatId, name, time.Now().Add(time.Hour*12).UTC())
 			if err := row.Scan(&id); err != nil {
 				fmt.Println(err)
 				return "", err

@@ -1,0 +1,7 @@
+services:
+  go-bot:
+    restart: always
+    image: golang:latest
+    build:
+      context: ./
+      dockerfile: Dockerfile
