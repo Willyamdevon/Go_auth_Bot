@@ -17,7 +17,6 @@ const (
 )
 
 const (
-	errorMessage      = "На сервере произошла ошибка, мы скоро ее поправим, мы будем очень благодраны тому, если Вы оповестите нас об ошибке в дс сервере, в [тг канале](https://t.me/upfollowru) или в нашем сообществе в vk"
 	startMessage      = "Привет! Этот бот создан для того, чтобы оповещать тебя о новых ответах на твои вопросы и комментариях к статьям, чтобы прикрепить свой аккаунт к боту, напиши команду /reg"
 	invalidMessage    = "Ваша ссылка больше не действительна или ее больше нет:)"
 	idkCommandMessage = "I don't know that command"
@@ -47,6 +46,8 @@ func main() {
 		log.Panic(err)
 	}
 	log.Println("Бот запущен")
+
+	errorMessage := fmt.Sprintf("На сервере произошла ошибка, мы скоро ее поправим, мы будем очень благодраны тому, если Вы оповестите нас об ошибке в дс сервере, в [тг канале](%s) или в нашем сообществе в vk", os.Getenv("TG_LINK"))
 
 	updateConfig := tgbotapi.NewUpdate(0)
 	updateConfig.Timeout = 30
@@ -156,5 +157,6 @@ func generateIdHash(id int64) string {
 }
 
 func generateLink(hashId string) string {
-	return fmt.Sprintf("https://upfollow.ru/Auth-tg/%s", hashId)
+	link := os.Getenv("LINK")
+	return fmt.Sprintf("%s%s", link, hashId)
 }
